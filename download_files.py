@@ -15,6 +15,7 @@ for i in data_train[:1000]:
     url = i[1]
     response = requests.get(url)
     file_path = f'dataset/{i[0]}.mp4'
+    print(i[1])
     if response.status_code == 200:
         with open(file_path, 'wb') as file:
             file.write(response.content)
