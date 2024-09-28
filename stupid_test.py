@@ -34,14 +34,14 @@ number_of_cpu = joblib.cpu_count()
 
 data = {}
 data_train = []
-with open('output.csv', 'r') as f:
-    reader = f.readlines()
-    for row in reader:
-        data_spl = row.split(' ')
-        name = data_spl[0].replace('.mp4', '')
-        data[name] = [int(d) for d in data_spl[1:]]
+# with open('output.csv', 'r') as f:
+#     reader = f.readlines()
+#     for row in reader:
+#         data_spl = row.split(' ')
+#         name = data_spl[0].replace('.mp4', '')
+#         data[name] = [int(d) for d in data_spl[1:]]
 
-with open('train_data_yappy/train.csv', 'r') as f:
+with open('train.csv', 'r') as f:
     reader = f.readlines()
     reader = reader[1:]
     for row in reader:
