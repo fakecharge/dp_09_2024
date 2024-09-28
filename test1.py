@@ -25,6 +25,7 @@ def extract_frame_metadata(video_file):
     fps_string = re.findall(r'(\d+)\s+fps', cmdout)
     fps = float(fps_string[0])
     duration_time_strings = re.findall(r'duration_time:\s*([\d\.]+)', cmdout)
+    print(duration_time_strings)
     duration_time = float(duration_time_strings[0]);
 
     pts_time_strings = re.findall(r'pts_time:\s*([\d\.]+)', cmdout)  # получим все длительности между ключевыми кадрами
