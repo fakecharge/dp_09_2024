@@ -16,6 +16,7 @@ import torch
 from joblib import Parallel, delayed
 import time
 
+print(torch.cuda.is_available())
 def read_specific_frame(video_path, frame_numbers):
     cap = cv2.VideoCapture(video_path)
     frames = []
@@ -41,16 +42,21 @@ data_train = []
 #         name = data_spl[0].replace('.mp4', '')
 #         data[name] = [int(d) for d in data_spl[1:]]
 
-with open('train.csv', 'r') as f:
+with open('test_yappy/test.csv', 'r') as f:
     reader = f.readlines()
     reader = reader[1:]
     for row in reader:
         data_spl = row.split(',')
-        data_train.append([data_spl[1], data_spl[4], data_spl[2]])
+        data_train.append([data_spl[1], data_spl[2], data_spl[0]])
 
+# device = torch.device('cuda')
+
+print("start")
 processor = AutoImageProcessor.from_pretrained("magic-leap-community/superpoint")
+print('process')
 model = SuperPointForKeypointDetection.from_pretrained("magic-leap-community/superpoint")
-
+# model.to(device)
+print('load')
 t = False
 
 if False:
@@ -123,12 +129,12 @@ count = 0
 if True:
     for next_data in data_train[:1600]:
         count += 1
-        url = next_data[2]
-        response = requests.get(url)
-        file_path = f'dataset/{next_data[0]}.mp4'
-        if response.status_code == 200:
-            with open(file_path, 'wb') as file:
-                file.write(response.content)
+        # url = next_data[2]
+        # response = requests.get(url)
+        file_path = f'test_yappy/test_dataset/{next_data[0]}.mp4'
+        # if response.status_code == 200:
+        #     with open(file_path, 'wb') as file:
+        #         file.write(response.content)
 
         value = test1.extract_frame_metadata(file_path)
         # print(values)
@@ -140,6 +146,7 @@ if True:
         print(key)
         images = read_specific_frame(file_path, value)
         inputs = processor(images, return_tensors="pt")
+        # inputs.to('cuda')
         outputs = model(**inputs)
         serch_files = os.listdir('descr')
         if os.path.exists(f"descr/{key}.pkl"):
@@ -189,9 +196,14 @@ if True:
                 # test = Parallel(n_jobs=8)(delayed(find_mp)(i) for i in serch_files)
                 delayed_funcs = [delayed(find_mp)(i) for i in serch_files]
                 parallel_pool = Parallel(n_jobs=joblib.cpu_count())
+                # parallel_pool = Parallel(n_jobs=1)
                 test = parallel_pool(delayed_funcs)
                 test = list(filter(None, test))
                 if len(test) > 0:
+                    new_test = []
+                    for m in test:
+                        new_test.append(m[0])
+                    test = new_test
                     test = sorted(test, key=lambda l: l[1], reverse=True)
                     if not test[0][0] in key_insert:
                         key_insert[test[0][0]] = []
@@ -213,30 +225,30 @@ if True:
                     max = len(value)
 
             if k is None:
-                if '' == next_data[1]:
-                    tp += 1
-                else:
-                    fn += 1
-                with open(f"test_scr.csv", "a") as fr:
-                    fr.write(f'{key},,{next_data[1]},\n')
+                # if '' == next_data[1]:
+                #     tp += 1
+                # else:
+                #     fn += 1
+                with open(f"test_scrN.csv", "a") as fr:
+                    fr.write(f'{next_data[2]},{next_data[0]},{next_data[1]},false,\n')
                 # print(key, '->', 'None')
             else:
-                if k.split(".")[0] == next_data[1]:
-                    tp += 1
-                else:
-                    fn += 1
-                with open(f"test_scr.csv", "a") as fr:
-                    fr.write(f'{key},{k.split(".")[0]},{next_data[1]},{value}\n')
+                # if k.split(".")[0] == next_data[1]:
+                #     tp += 1
+                # else:
+                #     fn += 1
+                with open(f"test_scrN.csv", "a") as fr:
+                    fr.write(f'{next_data[2]},{next_data[0]},{next_data[1]},true,{k.split(".")[0]}\n')
         else:
-            if '' == next_data[1]:
-                tp += 1
-            else:
-                fn += 1
-            with open(f"test_scr.csv", "a") as fr:
-                fr.write(f'{key},,{next_data[1]},\n')
+            # if '' == next_data[1]:
+            #     tp += 1
+            # else:
+            #     fn += 1
+            with open(f"test_scrN.csv", "a") as fr:
+                fr.write(f'{next_data[2]},{next_data[0]},{next_data[1]},false,\n')
 
 
-        print(f'score = {tp / (tp + fn)}', f'count images : {count}')
+        # print(f'score = {tp / (tp + fn)}', f'count images : {count}')
 
                 # print(key, '->', q)
                 # print(value)
@@ -246,4 +258,4 @@ if True:
         # print(key, value)
         # break
 
-print(f'score = {tp/(tp+fn)}')
+# print(f'score = {tp/(tp+fn)}')
